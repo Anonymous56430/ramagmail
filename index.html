@@ -4,11 +4,10 @@
 <h1>CORS Test</h1>
 <pre id="result"></pre>
 <script>
-// ===== استخدم AllOrigins بالطريقة الصحيحة =====
-const PROXY_URL = "https://api.allorigins.win/get?url=";
+// ===== استخدام Proxy يدعم POST =====
+const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
 const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?url=https://omar.trip.com";
 
-// البيانات المرسلة لـ Trip.com (تم التعديل حسب طلبك)
 const tripData = {
   head: {
     locale: "",
@@ -25,22 +24,16 @@ const tripData = {
   customParam: {}
 };
 
-// ===== إرسال الطلب عبر Proxy =====
-fetch(PROXY_URL + encodeURIComponent(TARGET_URL), {
+fetch(PROXY_URL + TARGET_URL, {
   method: "POST",
   headers: {
     "Content-Type": "application/json"
   },
   body: JSON.stringify(tripData)
 })
-// AllOrigins يرجع JSON فيه حقل contents
-.then(r => r.json())
-.then(data => {
-  // الرد الأصلي موجود في data.contents
-  const responseText = data.contents;
+.then(r => r.text())
+.then(responseText => {
   document.getElementById("result").textContent = "Status: 200\n\n" + responseText;
-
-  // محاولة استخراج الإيميل من الرد للتحقق
   try {
     const jsonResponse = JSON.parse(responseText);
     if (jsonResponse.email) {
@@ -53,7 +46,7 @@ fetch(PROXY_URL + encodeURIComponent(TARGET_URL), {
   }
 })
 .catch(e => {
-  document.getElementById("result").textContent = "Blocked:\n" + e;
+  document.getElementById("result").textContent = "Error:\n" + e;
 });
 </script>
 </body>
