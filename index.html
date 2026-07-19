@@ -1,59 +1,46 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>CORS Test</h1>
+<h1>CORS Test - مع Proxy</h1>
 <pre id="result"></pre>
 <script>
-// ===== الـ Proxy =====
-const PROXY_URL = "https://chloro.trip.com/";
+// ===== استخدم Proxy وسيط (Cors-Anywhere) =====
+const PROXY_URL = "https://cors-anywhere.herokuapp.com/";
 const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?url=https://omar.trip.com";
 
 // ===== البيانات للـ Proxy (text/plain) =====
 const bodyData = "data=&version=11&serverName=https://anonymous56430.github.io/ramagmail/&guid=";
 
-// ===== البيانات للـ Target (JSON) =====
-const tripData = {
-  head: {
-    locale: "",
-    currency: "",
-    vID: "1"
-  },
-  platform: "Online",
-  componentType: "online-app-download-universal",
-  version: "6.0.5",
-  pageId: "10320668150",
-  aid: 0,
-  sid: 0,
-  customId: "side",
-  customParam: {}
-};
-
-// ===== إرسال الطلب =====
+// ===== إرسال الطلب عبر Proxy =====
 fetch(PROXY_URL + TARGET_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "text/plain"  // للـ Proxy
+    "Content-Type": "text/plain"
   },
-  body: bodyData  // النص العادي للـ Proxy
+  body: bodyData
 })
-.then(r => r.text())
+.then(r => {
+  if (!r.ok) {
+    throw new Error(`HTTP error! status: ${r.status} - ${r.statusText}`);
+  }
+  return r.text();
+})
 .then(responseText => {
   document.getElementById("result").textContent = "Status: 200\n\n" + responseText;
   
-  // محاولة تحويل الرد لـ JSON
   try {
     const jsonResponse = JSON.parse(responseText);
+    console.log("✅ الرد JSON صالح:", jsonResponse);
     if (jsonResponse.email) {
-      console.log("✅ الإيميل موجود:", jsonResponse.email);
-    } else {
-      console.log("⚠️ الإيميل غير موجود في الرد");
+      console.log("📧 الإيميل موجود:", jsonResponse.email);
     }
   } catch(e) {
-    console.log("الرد ليس JSON صالح");
+    console.log("⚠️ الرد ليس JSON صالح");
   }
 })
 .catch(e => {
-  document.getElementById("result").textContent = "Error:\n" + e;
+  document.getElementById("result").textContent = "❌ خطأ:\n" + e.message;
+  console.error("❌ تفاصيل الخطأ:", e);
 });
 </script>
 </body>
