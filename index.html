@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>CORS Test</h1>
+<pre id="result"></pre>
+<script>
+// ===== استخدم AllOrigins بالطريقة الصحيحة =====
+const PROXY_URL = "https://api.allorigins.win/get?url=";
+const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?url=https://omar.trip.com";
+
+// البيانات المرسلة لـ Trip.com (تم التعديل حسب طلبك)
+const tripData = {
+  head: {
+    locale: "",
+    currency: "",
+    vID: "1"
+  },
+  platform: "Online",
+  componentType: "online-app-download-universal",
+  version: "6.0.5",
+  pageId: "10320668150",
+  aid: 0,
+  sid: 0,
+  customId: "side",
+  customParam: {}
+};
+
+// ===== إرسال الطلب عبر Proxy =====
+fetch(PROXY_URL + encodeURIComponent(TARGET_URL), {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(tripData)
+})
+// AllOrigins يرجع JSON فيه حقل contents
+.then(r => r.json())
+.then(data => {
+  // الرد الأصلي موجود في data.contents
+  const responseText = data.contents;
+  document.getElementById("result").textContent = "Status: 200\n\n" + responseText;
+
+  // محاولة استخراج الإيميل من الرد للتحقق
+  try {
+    const jsonResponse = JSON.parse(responseText);
+    if (jsonResponse.email) {
+      console.log("✅ الإيميل موجود:", jsonResponse.email);
+    } else {
+      console.log("⚠️ الإيميل غير موجود في الرد");
+    }
+  } catch(e) {
+    console.log("الرد ليس JSON صالح");
+  }
+})
+.catch(e => {
+  document.getElementById("result").textContent = "Blocked:\n" + e;
+});
+</script>
+</body>
+</html>
