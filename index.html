@@ -26,15 +26,14 @@ const tripData = {
 };
 
 // ===== إرسال الطلب عبر Proxy =====
-// ملاحظة: الـ Cookie ستُرسل تلقائياً من المتصفح إذا كانت موجودة
 fetch(PROXY_URL + TARGET_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "application/json",
-    "Host": "www.trip.com"
-    // لا نضيف Cookie يدوياً، المتصفح سيرسلها تلقائياً
+    "Content-Type": "application/json"
+    // نحذف الـ Cookie من الـ headers
   },
-  credentials: 'include',  // هذا يخبر المتصفح بإرسال الـ Cookies
+  // نغير credentials لـ 'omit' عشان ما نرسل Cookies
+  credentials: 'omit',
   body: JSON.stringify(tripData)
 })
 .then(r => {
